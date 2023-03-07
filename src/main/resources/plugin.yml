@@ -1,0 +1,10 @@
+name: Aktywnosc
+main: me.gacekmpl2.craftmpg.Main
+author: GacekMPL2, Pijok
+version: 1.0
+commands:
+  aktywnosc:
+    usage: /aktywnosc
+  timelog:
+    usage: /timelog
+    aliases: [timelogs, logi, timelogi]
