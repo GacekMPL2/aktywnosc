@@ -29,7 +29,7 @@ public class LogsUtils {
 
     public static void showLogs(Player player, String nickname) throws SQLException {
         DatabaseManager databaseManager = Main.getInstance().getDatabaseManager();
-        String sql = "SELECT * FROM logs WHERE nickname = ? ORDER BY id ASC";
+        String sql = "SELECT * FROM aktywnosc_logs WHERE nickname = ? ORDER BY id ASC";
         try (ResultSet results = databaseManager.query(sql, nickname)) {
             ChatUtil.sendMessage(player, "&7Wyniki dla &e&l" + nickname);
             ChatUtil.sendMessage(player, "&7==================");
@@ -46,7 +46,7 @@ public class LogsUtils {
     }
 
     public static void clearLogs() {
-        String sql = "TRUNCATE TABLE logs;";
+        String sql = "TRUNCATE TABLE aktywnosc_logs;";
         DatabaseManager databaseManager = Main.getInstance().getDatabaseManager();
         databaseManager.update(sql);
     }
