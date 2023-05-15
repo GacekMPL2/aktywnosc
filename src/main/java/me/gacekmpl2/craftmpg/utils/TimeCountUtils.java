@@ -15,23 +15,23 @@ public class TimeCountUtils {
     private static SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd 'at' HH:mm:ss");
 
     public static Long getPlayerTimeInDataBase(Player player) throws SQLException {
-        long time = 0L;
+        long time;
         long nope = -1L;
         DatabaseManager databaseManager = Main.getInstance().getDatabaseManager();
         String sql = "SELECT * FROM time_count WHERE nickname='" + player.getName() + "';";
-        ResultSet results = databaseManager.query(sql);
-        if (!results.next())
-            return Long.valueOf(nope);
-        System.out.println("Success");
-        time = results.getLong("time");
-        return Long.valueOf(time);
+        try (ResultSet results = databaseManager.query(sql)) {
+            if (!results.next()) return nope;
+            System.out.println("Success");
+            time = results.getLong("time");
+        }
+        return time;
     }
 
     public static void savePlayer(Player player, Long seconds) throws SQLException {
-        long seconds_in_base = getPlayerTimeInDataBase(player).longValue();
-        long seconds_to_save = seconds_in_base + seconds.longValue();
+        long seconds_in_base = getPlayerTimeInDataBase(player);
+        long seconds_to_save = seconds_in_base + seconds;
         DatabaseManager databaseManager = Main.getInstance().getDatabaseManager();
-        String sql = " ";
+        String sql;
         if (seconds_in_base == -1L) {
             sql = "INSERT INTO time_count(nickname, time) VALUES ('" + player.getName() + "','" + seconds_to_save + "');";
         } else {
@@ -46,8 +46,7 @@ public class TimeCountUtils {
     }
 
     public static Long getSecondsOnServer(Player player) {
-        long seconds = System.currentTimeMillis() / 1000L - PlayerTime.getPlayerTime(player).longValue() / 1000L;
-        return Long.valueOf(seconds);
+        return System.currentTimeMillis() / 1000L - PlayerTime.getPlayerTime(player) / 1000L;
     }
 
     public static void resetPlayerTime(String name) throws SQLException {
@@ -65,29 +64,31 @@ public class TimeCountUtils {
     public static void showTop(Player player) throws SQLException {
         DatabaseManager databaseManager = Main.getInstance().getDatabaseManager();
         String sql = "SELECT * FROM time_count ORDER BY `time` DESC LIMIT 10";
-        ResultSet results = databaseManager.query(sql);
-        ChatUtil.sendMessage(player, "&3&lTop 10 Aktywnosci");
-        int i = 1;
-        while (results.next()) {
-            String nickname = results.getString("nickname");
-            long time = results.getLong("time");
-            int hours = (int)(time / 3600L);
-            int minutes = (int)(time % 3600L / 60L);
-            ChatUtil.sendMessage(player, "&3&l" + i + ". &b" + nickname + ": &7" + hours + " h " + minutes + " m");
-            i++;
+        try (ResultSet results = databaseManager.query(sql)) {
+            ChatUtil.sendMessage(player, "&3&lTop 10 Aktywnosci");
+            int i = 1;
+            while (results.next()) {
+                String nickname = results.getString("nickname");
+                long time = results.getLong("time");
+                int hours = (int) (time / 3600L);
+                int minutes = (int) (time % 3600L / 60L);
+                ChatUtil.sendMessage(player, "&3&l" + i + ". &b" + nickname + ": &7" + hours + " h " + minutes + " m");
+                i++;
+            }
         }
     }
 
     public static void showAllResults(Player player) throws SQLException {
         DatabaseManager databaseManager = Main.getInstance().getDatabaseManager();
         String sql = "SELECT * FROM time_count";
-        ResultSet results = databaseManager.query(sql);
-        while (results.next()) {
-            String nickname = results.getString("nickname");
-            long time = results.getLong("time");
-            int hours = (int)(time / 3600L);
-            int minutes = (int)(time % 3600L / 60L);
-            ChatUtil.sendMessage(player, "&e" + nickname + ": &7" + hours + " h " + minutes + " m");
+        try (ResultSet results = databaseManager.query(sql)) {
+            while (results.next()) {
+                String nickname = results.getString("nickname");
+                long time = results.getLong("time");
+                int hours = (int) (time / 3600L);
+                int minutes = (int) (time % 3600L / 60L);
+                ChatUtil.sendMessage(player, "&e" + nickname + ": &7" + hours + " h " + minutes + " m");
+            }
         }
     }
 }

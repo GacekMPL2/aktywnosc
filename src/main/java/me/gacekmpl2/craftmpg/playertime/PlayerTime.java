@@ -3,14 +3,14 @@ import java.util.HashMap;
 import org.bukkit.entity.Player;
 
 public class PlayerTime {
-    private static HashMap<Player, Long> player_time = new HashMap<Player, Long>();
+    private static final HashMap<Player, Long> player_time = new HashMap<>();
 
     public static Long getPlayerTime(Player player) {
         return player_time.get(player);
     }
 
     public static void addPlayer(Player player) {
-        player_time.put(player, Long.valueOf(System.currentTimeMillis()));
+        player_time.put(player, System.currentTimeMillis());
     }
 
     public static void removePlayer(Player player) {
