@@ -10,14 +10,15 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 
 public class LogsUtils {
-    private static ArrayList<String> allowedNicknames = new ArrayList<String>();
+    private static final ArrayList<String> allowedNicknames = new ArrayList<>();
 
-    private static String serverName = Main.getInstance().getServer().getMotd();
+    private static final String serverName = Main.getInstance().getServer().getMotd();
 
     public static void loadSettings() {
         allowedNicknames.add("Pijok_");
         allowedNicknames.add("GacekMPL2");
         allowedNicknames.add("Mysiula");
+        allowedNicknames.add("_mkko120");
         Debug.log("[Aktywnosc] Laduje ustawienia");
         Debug.log("Server: " + serverName);
     }
@@ -28,17 +29,18 @@ public class LogsUtils {
 
     public static void showLogs(Player player, String nickname) throws SQLException {
         DatabaseManager databaseManager = Main.getInstance().getDatabaseManager();
-        String sql = "SELECT * FROM logs WHERE nickname = '" + nickname + "' ORDER BY id ASC";
-        ResultSet results = databaseManager.query(sql);
-        ChatUtil.sendMessage(player, "&7Wyniki dla &e&l" + nickname);
-        ChatUtil.sendMessage(player, "&7==================");
-        while (results.next()) {
-            long time = results.getLong("time");
-            String date = results.getString("date");
-            String serverName = results.getString("server");
-            int hours = (int)(time / 3600L);
-            int minutes = (int)(time % 3600L / 60L);
-            ChatUtil.sendMessage(player, "&7" + serverName + " | &e" + date + " &7| &7" + hours + " h " + minutes + " m");
+        String sql = "SELECT * FROM logs WHERE nickname = ? ORDER BY id ASC";
+        try (ResultSet results = databaseManager.query(sql, nickname)) {
+            ChatUtil.sendMessage(player, "&7Wyniki dla &e&l" + nickname);
+            ChatUtil.sendMessage(player, "&7==================");
+            while (results.next()) {
+                long time = results.getLong("time");
+                String date = results.getString("date");
+                String serverName = results.getString("server");
+                int hours = (int) (time / 3600L);
+                int minutes = (int) (time % 3600L / 60L);
+                ChatUtil.sendMessage(player, "&7" + serverName + " | &e" + date + " &7| &7" + hours + " h " + minutes + " m");
+            }
         }
         ChatUtil.sendMessage(player, "&7==================");
     }

@@ -10,10 +10,11 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.jetbrains.annotations.NotNull;
 
 public class QuitListener implements Listener {
     @EventHandler
-    public void onQuit(PlayerQuitEvent event) throws SQLException {
+    public void onQuit(@NotNull PlayerQuitEvent event) throws SQLException {
         Player player = event.getPlayer();
         if (player.hasPermission(GlobalVariables.getTime_count_perm())) {
             Debug.log("Czas: " + TimeCountUtils.getSecondsOnServer(event.getPlayer()));
