@@ -1,6 +1,6 @@
 name: Aktywnosc
 main: me.gacekmpl2.craftmpg.Main
-author: GacekMPL2, Pijok
+authors: [GacekMPL2, Pijok, mkko120]
 version: 1.0
 commands:
   aktywnosc:
