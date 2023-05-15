@@ -1,12 +1,11 @@
 package me.gacekmpl2.craftmpg;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
+
+import java.sql.*;
 
 public class DatabaseManager {
-    private Connection connection;
+    private HikariDataSource hikariDS;
 
     private String host;
 
@@ -24,41 +23,78 @@ public class DatabaseManager {
         this.database = database;
         this.username = username;
         this.password = password;
+
+        HikariConfig config = new HikariConfig();
+        config.setJdbcUrl("jdbc:mariadb://" + this.host + ":" + this.port + "/" + this.database);
+        config.setUsername(this.username);
+        config.setPassword(this.password);
+
+        this.hikariDS = new HikariDataSource();
     }
 
-    public void openConnection() throws SQLException, ClassNotFoundException {
-        if (this.connection != null && !this.connection.isClosed())
-            return;
-        synchronized (this) {
-            if (this.connection != null && !this.connection.isClosed())
-                return;
-            Class.forName("com.mysql.jdbc.Driver");
-            this.connection = DriverManager.getConnection("jdbc:mysql://" + this.host + ":" + this.port + "/" + this.database, this.username, this.password);
+    /**
+     * Executes query
+     * @param query query to execute
+     * @param values optional values to set
+     * @return true if query was executed successfully, false otherwise
+     */
+    public boolean execute(String query, Object... values) {
+        try (Connection connection = hikariDS.getConnection()) {
+            try (PreparedStatement statement = connection.prepareStatement(query)) {
+                if (values.length > 0) {
+                    for (int i = 0; i < values.length; i++) {
+                        statement.setObject(i + 1, values[i]);
+                    }
+                }
+                return statement.execute();
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
+        return false;
     }
 
-    public ResultSet query(String query) {
-        try {
-            openConnection();
-            Statement statement = this.connection.createStatement();
-            return statement.executeQuery(query);
-        } catch (SQLException exception) {
-            exception.printStackTrace();
-        } catch (ClassNotFoundException exception2) {
-            exception2.printStackTrace();
+    /**
+     * Executes query and returns result
+     * @param query query to execute
+     * @param values optional values to set
+     * @return result of query
+     */
+    public ResultSet query(String query, Object... values) {
+        try (Connection connection = hikariDS.getConnection()) {
+            try (PreparedStatement stmt = connection.prepareStatement(query)) {
+                if (values.length > 0) {
+                    for (int i = 0; i < values.length; i++) {
+                        stmt.setObject(i + 1, values[i]);
+                    }
+                }
+                return stmt.executeQuery();
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
         return null;
     }
 
-    public void update(String query) {
-        try {
-            openConnection();
-            Statement statement = this.connection.createStatement();
-            statement.executeUpdate(query);
-        } catch (SQLException exception) {
-            exception.printStackTrace();
-        } catch (ClassNotFoundException exception2) {
-            exception2.printStackTrace();
+    /**
+     * Executes update and returns result
+     * @param query query to execute
+     * @param values optional values to set
+     * @return result of update
+     */
+    public int update(String query, Object... values) {
+        try (Connection connection = hikariDS.getConnection()) {
+            try (PreparedStatement stmt = connection.prepareStatement(query)) {
+                if (values.length > 0) {
+                    for (int i = 0; i < values.length; i++) {
+                        stmt.setObject(i + 1, values[i]);
+                    }
+                }
+                return stmt.executeUpdate();
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
+        return 0;
     }
 }
