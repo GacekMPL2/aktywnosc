@@ -5,31 +5,16 @@ import com.zaxxer.hikari.HikariDataSource;
 import java.sql.*;
 
 public class DatabaseManager {
-    private HikariDataSource hikariDS;
-
-    private String host;
-
-    private String port;
-
-    private String database;
-
-    private String username;
-
-    private String password;
+    private final HikariDataSource hikariDS;
 
     public DatabaseManager(String host, String port, String database, String username, String password) {
-        this.host = host;
-        this.port = port;
-        this.database = database;
-        this.username = username;
-        this.password = password;
-
         HikariConfig config = new HikariConfig();
-        config.setJdbcUrl("jdbc:mariadb://" + this.host + ":" + this.port + "/" + this.database);
-        config.setUsername(this.username);
-        config.setPassword(this.password);
+        config.setJdbcUrl("jdbc:mariadb://" + host + ":" + port + "/" + database + "?autoReconnect=true&useSSL=false");
+        config.setDriverClassName("org.mariadb.jdbc.Driver");
+        config.setUsername(username);
+        config.setPassword(password);
 
-        this.hikariDS = new HikariDataSource();
+        this.hikariDS = new HikariDataSource(config);
     }
 
     /**

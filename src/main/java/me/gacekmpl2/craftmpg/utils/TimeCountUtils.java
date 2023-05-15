@@ -12,14 +12,14 @@ import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 
 public class TimeCountUtils {
-    private static SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd 'at' HH:mm:ss");
+    private static final SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd 'at' HH:mm:ss");
 
     public static Long getPlayerTimeInDataBase(Player player) throws SQLException {
         long time;
         long nope = -1L;
         DatabaseManager databaseManager = Main.getInstance().getDatabaseManager();
-        String sql = "SELECT * FROM time_count WHERE nickname='" + player.getName() + "';";
-        try (ResultSet results = databaseManager.query(sql)) {
+        String sql = "SELECT * FROM aktywnosc_time_count WHERE nickname = ?;";
+        try (ResultSet results = databaseManager.query(sql, player.getName())) {
             if (!results.next()) return nope;
             System.out.println("Success");
             time = results.getLong("time");
@@ -33,16 +33,15 @@ public class TimeCountUtils {
         DatabaseManager databaseManager = Main.getInstance().getDatabaseManager();
         String sql;
         if (seconds_in_base == -1L) {
-            sql = "INSERT INTO time_count(nickname, time) VALUES ('" + player.getName() + "','" + seconds_to_save + "');";
+            databaseManager.update("INSERT INTO aktywnosc_time_count(nickname, time) VALUES (?, ?);", player.getName(), seconds_to_save);
         } else {
             Debug.log("Jest");
-            sql = "UPDATE time_count SET time = '" + seconds_to_save + "' WHERE nickname ='" + player.getName() + "';";
+            databaseManager.update("UPDATE aktywnosc_time_count SET time = ? WHERE nickname = ?;", seconds_to_save, player.getName());
         }
-        databaseManager.update(sql);
         Date date = new Date(System.currentTimeMillis());
         String date_text = formatter.format(date);
-        sql = "INSERT INTO logs (nickname, time, date, server) VALUES ('" + player.getName() + "', '" + seconds + "', '" + date_text + "', '" + LogsUtils.getServerName() + "');";
-        databaseManager.update(sql);
+        sql = "INSERT INTO aktywnosc_logs (nickname, time, date, server) VALUES (?, ?, ?, ?);";
+        databaseManager.update(sql, player.getName(), seconds, date_text, LogsUtils.getServerName());
     }
 
     public static Long getSecondsOnServer(Player player) {
@@ -50,20 +49,20 @@ public class TimeCountUtils {
     }
 
     public static void resetPlayerTime(String name) throws SQLException {
-        String sql = "DELETE FROM time_count WHERE nickname='" + name + "';";
+        String sql = "DELETE FROM aktywnosc_time_count WHERE nickname = ?;";
         DatabaseManager databaseManager = Main.getInstance().getDatabaseManager();
-        databaseManager.update(sql);
+        databaseManager.update(sql, name);
     }
 
     public static void resetAllPlayers() throws SQLException {
-        String sql = "TRUNCATE TABLE time_count;";
+        String sql = "TRUNCATE TABLE aktywnosc_time_count;";
         DatabaseManager databaseManager = Main.getInstance().getDatabaseManager();
         databaseManager.update(sql);
     }
 
     public static void showTop(Player player) throws SQLException {
         DatabaseManager databaseManager = Main.getInstance().getDatabaseManager();
-        String sql = "SELECT * FROM time_count ORDER BY `time` DESC LIMIT 10";
+        String sql = "SELECT * FROM aktywnosc_time_count ORDER BY `time` DESC LIMIT 10";
         try (ResultSet results = databaseManager.query(sql)) {
             ChatUtil.sendMessage(player, "&3&lTop 10 Aktywnosci");
             int i = 1;
@@ -80,7 +79,7 @@ public class TimeCountUtils {
 
     public static void showAllResults(Player player) throws SQLException {
         DatabaseManager databaseManager = Main.getInstance().getDatabaseManager();
-        String sql = "SELECT * FROM time_count";
+        String sql = "SELECT * FROM aktywnosc_time_count";
         try (ResultSet results = databaseManager.query(sql)) {
             while (results.next()) {
                 String nickname = results.getString("nickname");
