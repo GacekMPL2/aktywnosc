@@ -43,6 +43,11 @@ public class Main extends JavaPlugin {
                 "time BIGINT NOT NULL," +
                 "date VARCHAR(64) NOT NULL," +
                 "server VARCHAR(32) NOT NULL)";
+        String query_3 = "CREATE TABLE IF NOT EXISTS aktywnosc_time_archive (" +
+                "id INT NOT NULL AUTO_INCREMENT PRIMARY KEY," +
+                "nickname VARCHAR(32) NOT NULL," +
+                "time BIGINT NOT NULL," +
+                "date DATE NOT NULL)";
         this.databaseManager.update(query);
         this.databaseManager.update(query_2);
     }
