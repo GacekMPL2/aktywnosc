@@ -90,4 +90,23 @@ public class TimeCountUtils {
             }
         }
     }
+    
+        public static void backupAllPlayers() throws SQLException {
+        Date date = new Date(System.currentTimeMillis());
+        String tableName = "aktywnosc_time_archive";
+        String sqlCreateTable = "CREATE TABLE IF NOT EXISTS " + tableName + " (" +
+                "id INT NOT NULL AUTO_INCREMENT PRIMARY KEY," +
+                "nickname VARCHAR(32) NOT NULL," +
+                "time BIGINT NOT NULL," +
+                "date DATE NOT NULL)";
+        String sqlInsertData = "INSERT INTO " + tableName + " (nickname, time, date) " +
+                "SELECT nickname, time, ? FROM aktywnosc_time_count " +
+                "ON DUPLICATE KEY UPDATE time = VALUES(time)";
+
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+
+        DatabaseManager databaseManager = Main.getInstance().getDatabaseManager();
+        databaseManager.update(sqlCreateTable);
+        databaseManager.update(sqlInsertData, dateFormat.format(date));
+    }
 }
