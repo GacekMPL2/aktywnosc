@@ -50,6 +50,7 @@ public class Main extends JavaPlugin {
                 "date DATE NOT NULL)";
         this.databaseManager.update(query);
         this.databaseManager.update(query_2);
+        this.databaseManager.update(query_3);
     }
 
     public static Main getInstance() {
