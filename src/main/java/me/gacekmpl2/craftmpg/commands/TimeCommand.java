@@ -33,6 +33,7 @@ public class TimeCommand implements CommandExecutor {
                     if (player.hasPermission(GlobalVariables.getTime_count_reset())) {
                         try {
                             ChatUtil.sendMessage(player, "&4&lWyczyszczono wszystkich uzytkownikow!");
+                            TimeCountUtils.backupAllPlayers();
                             TimeCountUtils.resetAllPlayers();
                         } catch (SQLException throwables) {
                             ChatUtil.sendMessage(player, "&cBlad polaczenia z baza danych!");
@@ -98,7 +99,41 @@ public class TimeCommand implements CommandExecutor {
                     }
                     return true;
                 }
+
+            case 3:
+                if (args[0].equalsIgnoreCase("set")) {
+                    if (player.hasPermission("aktywnosc.set")) {
+                        String playerName = args[1];
+                        String timeString = args[2];
+
+                        Player targetPlayer = Bukkit.getPlayer(playerName);
+                        if (targetPlayer == null) {
+                            sender.sendMessage(ChatColor.RED + "Gracz " + playerName + " nie jest online.");
+                            return true;
+                        }
+
+                        long seconds;
+                        try {
+                            seconds = parseTimeString(timeString);
+                        } catch (ParseException e) {
+                            sender.sendMessage(ChatColor.RED + "Niepoprawny format czasu. Użyj formatu godzinowego (np. 2h30m).");
+                            return true;
+                        }
+
+                        try {
+                            TimeCountUtils.setPlayerTime(targetPlayer, seconds);
+                            sender.sendMessage(ChatColor.GREEN + "Ustawiono aktywność dla gracza " + playerName + " na " + seconds + " sekund.");
+                        } catch (SQLException e) {
+                            sender.sendMessage(ChatColor.RED + "Wystąpił błąd przy ustawianiu aktywności.");
+                            e.printStackTrace();
+                        }
+                    } else {
+                        sender.sendMessage(ChatColor.RED + "Nie masz dostępu do tej komendy!");
+                    }
+                    return true;
+                }
                 break;
+
 
             default: {
                 ChatUtil.sendMessage(player, "&b/" + label + " zobacz <nick>");
@@ -108,5 +143,18 @@ public class TimeCommand implements CommandExecutor {
             }
         }
         return true;
+    }
+    private long parseTimeString(String timeString) throws ParseException {
+        long seconds = 0;
+        String[] parts = timeString.split("h");
+        if (parts.length == 2) {
+            int hours = Integer.parseInt(parts[0]);
+            int minutes = 0;
+            if (parts[1].endsWith("m")) {
+                minutes = Integer.parseInt(parts[1].substring(0, parts[1].length() - 1));
+            }
+            seconds = (hours * 3600L) + (minutes * 60L);
+        }
+        return seconds;
     }
 }
