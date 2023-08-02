@@ -90,8 +90,8 @@ public class TimeCountUtils {
             }
         }
     }
-    
-        public static void backupAllPlayers() throws SQLException {
+
+    public static void backupAllPlayers() throws SQLException {
         Date date = new Date(System.currentTimeMillis());
         String tableName = "aktywnosc_time_archive";
         String sqlCreateTable = "CREATE TABLE IF NOT EXISTS " + tableName + " (" +
@@ -108,5 +108,16 @@ public class TimeCountUtils {
         DatabaseManager databaseManager = Main.getInstance().getDatabaseManager();
         databaseManager.update(sqlCreateTable);
         databaseManager.update(sqlInsertData, dateFormat.format(date));
+    }
+
+    public static void setPlayerTime(Player player, long seconds) throws SQLException {
+        DatabaseManager databaseManager = Main.getInstance().getDatabaseManager();
+        String sql = "UPDATE aktywnosc_time_count SET time = ? WHERE nickname = ?;";
+        databaseManager.update(sql, seconds, player.getName());
+
+        Date date = new Date(System.currentTimeMillis());
+        String date_text = formatter.format(date);
+        String sqlLogs = "INSERT INTO aktywnosc_logs (nickname, time, date, server) VALUES (?, ?, ?, ?);";
+        databaseManager.update(sqlLogs, player.getName(), seconds, date_text, LogsUtils.getServerName());
     }
 }
